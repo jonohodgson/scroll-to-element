@@ -1,17 +1,26 @@
 var Tween = require('./tween');
 var raf = require('raf');
 
-function scroll() {
+function scroll(container) {
+  if (container) {
+    return {
+      top: container.scrollTop,
+      left: container.scrollLeft
+    }
+  }
   var y = window.pageYOffset || document.documentElement.scrollTop;
   var x = window.pageXOffset || document.documentElement.scrollLeft;
   return { top: y, left: x };
 }
 
-function scrollTo(x, y, options) {
+function scrollTo(x, y, options, container, onEnd) {
+
+  var scrollContainer = container || window;
+
   options = options || {};
 
   // start position
-  var start = scroll();
+  var start = scroll(container);
 
   // setup tween
   var tween = Tween(start)
@@ -21,12 +30,15 @@ function scrollTo(x, y, options) {
 
   // scroll
   tween.update(function(o){
-    window.scrollTo(o.left | 0, o.top | 0);
+    scrollContainer.scrollTo(o.left | 0, o.top | 0);
   });
 
   // handle end
   tween.on('end', function(){
     animate = function(){};
+    if(typeof onEnd === 'function') {
+      onEnd();
+    }
   });
 
   // animate
